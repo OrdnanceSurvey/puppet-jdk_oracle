@@ -48,7 +48,7 @@ class jdk_oracle (
   $version_build  = hiera('jdk_oracle::version_build',  'default' ),
   $install_dir    = hiera('jdk_oracle::install_dir',    '/opt' ),
   $use_cache      = hiera('jdk_oracle::use_cache',      false ),
-  $cache_source   = 'puppet:///modules/jdk_oracle/',
+  $cache_source   = hiera('jdk_oracle::cache_source', 'puppet:///modules/jdk_oracle/'),
   $platform       = hiera('jdk_oracle::platform',       'x64' ),
   $jce            = hiera('jdk_oracle::jce',            false ),
   $default_java   = hiera('jdk_oracle::default_java',   true ),
