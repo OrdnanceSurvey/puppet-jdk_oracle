@@ -370,13 +370,6 @@ define jdk_oracle::install(
         group   => 'root',
         require => Exec['extract_jce'],
       }
-
     }
   }
-
-}
-
-
-  }
-
 }
