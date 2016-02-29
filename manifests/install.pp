@@ -58,6 +58,7 @@ define jdk_oracle::install(
         }
         $javaDownloadURI = "http://download.oracle.com/otn-pub/java/jdk/${version}u${version_u}-b${version_b}/jdk-${version}u${version_u}-linux-${plat_filename}.tar.gz"
         $java_home = "${install_dir}/jdk1.${version}.0_${version_u}"
+        $jceDownloadURI = 's3://amp-java-patches-4e5e2cceb6264a54d653b043c6734f04/UnlimitedJCEPolicyJDK7.zip'
       }
       '6': {
         if ($version_update != 'default'){
@@ -318,6 +319,63 @@ define jdk_oracle::install(
       }
 
     }
+    if ( $jce and $version == '7' ) {
+
+      $jceFilename = inline_template('<%= File.basename(@jceDownloadURI) %>')
+      $jce_dir = 'UnlimitedJCEPolicyJDK7'
+      $jce_dir_ext = 'UnlimitedJCEPolicy'
+
+      if ( $use_cache ) {
+        file { "${install_dir}/${jceFilename}":
+          source  => "${cache_source}${jceFilename}",
+          require => File[$install_dir],
+        } ->
+        exec { 'get_jce_package':
+          cwd     => $install_dir,
+          creates => "${install_dir}/jce_from_cache",
+          command => 'touch jce_from_cache',
+        }
+      }
+
+      exec { 'extract_jce':
+        cwd     => "${install_dir}/",
+        command => "unzip ${jceFilename}",
+        creates => "${install_dir}/${jce_dir}",
+        require => [ Exec['get_jce_package'], Package['unzip'] ],
+      }
+
+      file { "${java_home}/jre/lib/security/README.txt":
+        ensure  => 'present',
+        source  => "${install_dir}/${jce_dir_ext}/README.txt",
+        mode    => '0644',
+        owner   => 'root',
+        group   => 'root',
+        require => Exec['extract_jce'],
+      }
+
+      file { "${java_home}/jre/lib/security/local_policy.jar":
+        ensure  => 'present',
+        source  => "${install_dir}/${jce_dir_ext}/local_policy.jar",
+        mode    => '0644',
+        owner   => 'root',
+        group   => 'root',
+        require => Exec['extract_jce'],
+      }
+
+      file { "${java_home}/jre/lib/security/US_export_policy.jar":
+        ensure  => 'present',
+        source  => "${install_dir}/${jce_dir_ext}/US_export_policy.jar",
+        mode    => '0644',
+        owner   => 'root',
+        group   => 'root',
+        require => Exec['extract_jce'],
+      }
+
+    }
+  }
+
+}
+
 
   }
 
