@@ -340,7 +340,7 @@ define jdk_oracle::install(
       exec { 'extract_jce':
         cwd     => "${install_dir}/",
         command => "unzip ${jceFilename}",
-        creates => "${install_dir}/${jce_dir}",
+        creates => "${install_dir}/${jce_dir_ext}",
         require => [ Exec['get_jce_package'], Package['unzip'] ],
       }
 
